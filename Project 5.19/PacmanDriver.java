@@ -1,0 +1,39 @@
+    //Torbert, e-mail: smtorbert@fcps.edu	
+	 //version 7.14.2003
+import javax.swing.*;
+import java.awt.*;
+import javax.swing.JFrame;
+   public class PacmanDriver
+   {
+       public static void main(String[] args)
+      {
+         JFrame frame = new JFrame("PAC-MAN");
+         frame.setSize(620, 630);
+         frame.setLocation(200, 100);
+         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+         frame.setContentPane(new Map());
+         frame.setVisible(true);
+      }
+   }
+   
+   
+   
+   
+   
+   
+   
+   
+   
+   
+   
+   
+   
+   
+   
+   
+   
+   
+   
+   
+   
+  
