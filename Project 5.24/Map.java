@@ -54,7 +54,6 @@ public class Map extends JPanel {
       animationObjects.add(pacman);
       
       ghost1 = new Ghost(80, 80, Color.BLACK);
-      animationObjects.add(ghost1);
       ghosts.add(ghost1);
       h = new Health();
 
@@ -131,8 +130,7 @@ public class Map extends JPanel {
       for (Powerup a : powerups) {
          if (a.collide(pacman) == 1) {
             eatable = true;
-         } else {
-            eatable = false;
+         
          }
          
          a.drawMe(myBuffer);
@@ -142,8 +140,14 @@ public class Map extends JPanel {
       }
       
       for (Ghost a : ghosts) {
-         a.ghostCollide(pacman);
+         
+         if (ghost1.ghostCollide(pacman) == 1) {
+            pacman.setX(300);
+            pacman.setY(300);
+            health--;
+         }
          a.ghostMove();
+         a.step();
          a.drawMe(myBuffer);
       }         
       /*****

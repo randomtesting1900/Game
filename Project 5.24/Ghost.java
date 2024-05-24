@@ -23,12 +23,20 @@ public class Ghost extends Square implements Animatable {
    }
    
    public void drawMe(Graphics g) {
-      ImageIcon tommy = new ImageIcon("ghost.png");
-      g.drawImage(tommy.getImage(), getX(), getY(), 20, 20, null);
+      ImageIcon health = new ImageIcon("ghost.png");
+      ImageIcon vul = new ImageIcon("ghostvul.png");
+      ImageIcon dead = new ImageIcon("ghostdead.png");
+      if (notMove == true) {
+         g.drawImage(dead.getImage(), getX(), getY(), 20, 20, null);
+      } else if (isEat == true && notMove != true) {
+         g.drawImage(vul.getImage(), getX(), getY(), 20, 20, null);
+      } else {
+         g.drawImage(health.getImage(), getX(), getY(), 20, 20, null);
+      }
    }
       
    public void step() {
-      if (proceed) {
+      if (proceed && !notMove) {
          // Update position based on direction
          if (north) setY(getY() - 20);
          if (south) setY(getY() + 20);
