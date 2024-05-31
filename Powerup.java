@@ -32,5 +32,4 @@ public class Powerup extends Square {
             return 0;
         }
     }
-
 }

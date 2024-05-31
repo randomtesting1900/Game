@@ -7,18 +7,26 @@ import java.io.File;
 import java.io.IOException;
 import javax.sound.sampled.*;
 
-
 public class Map extends JPanel {
 
     private BufferedImage myImage; // buffer
     private Graphics myBuffer; // buffer
     private Timer t; // timer
+    private Timer eatableTimer;
+    private Timer speedableTimer;
+    private Timer stoppableTimer;
 
     // key bools
     private boolean left = false;
     private boolean right = false;
     private boolean up = false;
     private boolean down = false;
+
+    public static String status = "right";
+    public static boolean eatable = false;
+    public static boolean speedable = false;
+    public static boolean stoppable = false;
+    public int winAmount;
 
     private Pacman pacman;
     public int score = 0;
@@ -40,6 +48,8 @@ public class Map extends JPanel {
     public ArrayList<Border> borders = new ArrayList<>();
     public ArrayList<Powerup> powerups = new ArrayList<>();
     public ArrayList<SpeedIncrease> oranges = new ArrayList<>();
+    public ArrayList<Ghost> ghosts = new ArrayList<>();
+    public ArrayList<SpeedStop> trash = new ArrayList<>();
     public ArrayList<Animatable> animationObjects;
 
 
@@ -54,14 +64,15 @@ public class Map extends JPanel {
 
         pacman = new Pacman(200, 200);
         animationObjects.add(pacman);
+
         ghost1 = new Ghost(80, 80, Color.BLACK);
-        animationObjects.add(ghost1);
-        ghost2 = new Ghost(80,80, Color.BLACK);
-        animationObjects.add(ghost2);
-        ghost3 = new Ghost(80,80, Color.BLACK);
-        animationObjects.add(ghost3);
-        ghost4 = new Ghost(80,80, Color.BLACK);
-        animationObjects.add(ghost4);
+        ghosts.add(ghost1);
+        ghost2 = new Ghost(400, 400, Color.BLACK);
+        ghosts.add(ghost2);
+        ghost3 = new Ghost(80, 400, Color.BLACK);
+        ghosts.add(ghost3);
+        ghost4 = new Ghost(400, 80, Color.BLACK);
+        ghosts.add(ghost4);
         h = new Health();
 
         for (int i = 0; i < n; i++) {
@@ -70,15 +81,14 @@ public class Map extends JPanel {
                     matrix[i][j] = 0; // Borders are always 0
                 } else {
                     double ran = Math.random();
-                    if (ran < 0.6) {
+                    if (ran < 0.7) {
                         matrix[i][j] = 1; // 50% chance for food
-                    } else if (0.6 <= ran && ran <= 0.85) {
+                    } else if (0.7 <= ran && ran < 0.9) {
                         matrix[i][j] = 5; // 50% chance for wall
-                    } else if (0.85 <= ran && ran <= 0.95){
+                    } else if (0.9 <= ran && ran <= 0.95) {
+                        matrix[i][j] = 6; // 50% chance for wall
+                    } else {
                         matrix[i][j] = 2;
-                    }
-                    else {
-                        matrix[i][j] = 3;
                     }
                 }
             }
@@ -94,11 +104,14 @@ public class Map extends JPanel {
                     walls.add(new Wall(i * 20, j * 20));
                 } else if (matrix[i][j] == 3) {
                     oranges.add(new SpeedIncrease(i * 20, j * 20, Color.BLACK));
+                } else if (matrix[i][j] == 6) {
+                    trash.add(new SpeedStop(i * 20, j * 20, Color.BLACK));
                 } else if (matrix[i][j] == 0) {
                     borders.add(new Border(i * 20, j * 20));
                 }
             }
         }
+        winAmount = foods.size();
 
         t = new Timer(75, new AnimationListener()); // timer
         t.start(); // timer
@@ -106,7 +119,6 @@ public class Map extends JPanel {
         addKeyListener(new Key()); // key
         setFocusable(true); // key
         playSound("pacman_beginning.wav");
-
 
     }
 
@@ -131,12 +143,35 @@ public class Map extends JPanel {
         return health;
     }
 
+    public static boolean getEatable() {
+        return eatable;
+    }
+
+    public static String getStatus() {
+        return status;
+    }
+
     public void paintComponent(Graphics g) {
 
         g.drawImage(myImage, 0, 0, getWidth(), getHeight(), null);
-        g.setColor(Color.WHITE);
-        g.setFont(new Font("San-Serif", Font.BOLD, 15));
-        g.drawString("" + score, 290, 15);
+
+        if (health == 0) {
+            t.stop();
+            g.setColor(Color.WHITE);
+            g.setFont(new Font("San-Serif", Font.BOLD, 15));
+            g.drawString("You lost this level!", 240, 15);
+        } else if (score == winAmount) {
+            t.stop();
+            g.setColor(Color.WHITE);
+            g.setFont(new Font("San-Serif", Font.BOLD, 15));
+            g.drawString("You won this level!", 240, 15);
+        } else {
+            g.setColor(Color.WHITE);
+            g.setFont(new Font("San-Serif", Font.BOLD, 15));
+            g.drawString("" + score + "/" + winAmount, 285, 15);
+        }
+
+
     }
 
     public void animate() {
@@ -155,46 +190,91 @@ public class Map extends JPanel {
             a.drawMe(myBuffer);
         }
         for (Powerup a : powerups) {
-            a.collide(pacman);
+            if (a.collide(pacman) == 1) {
+                if (!eatable) {
+                    eatable = true;
+
+                    if (eatableTimer != null && eatableTimer.isRunning()) {
+                        eatableTimer.stop();
+                    }
+                    eatableTimer = new Timer(5000, new ActionListener() {
+                        public void actionPerformed(ActionEvent e) {
+                            eatable = false;
+                            eatableTimer.stop();
+                        }
+                    });
+                    eatableTimer.setRepeats(false);
+                    eatableTimer.start();
+                }
+            }
+
             a.drawMe(myBuffer);
         }
         for (SpeedIncrease a : oranges) {
-            a.collide(pacman);
-            while (a.collide(pacman) == 1){
-                pacman.setDX(pacman.getDX()+20);
+            if (a.collide(pacman) == 1) {
+                if (!speedable) {
+                    speedable = true;
+                    stoppable = false;
+
+                    if (speedableTimer != null && speedableTimer.isRunning()) {
+                        speedableTimer.stop();
+                    }
+                    if (stoppableTimer != null && stoppableTimer.isRunning()) {
+                        stoppableTimer.stop();
+                    }
+
+
+                    speedableTimer = new Timer(5000, new ActionListener() {
+                        public void actionPerformed(ActionEvent e) {
+                            speedable = false;
+                            speedableTimer.stop();
+                        }
+                    });
+                    speedableTimer.setRepeats(false);
+                    speedableTimer.start();
+                }
             }
             a.drawMe(myBuffer);
         }
 
-        ghost1.ghostMove();
-        if (ghost1.ghostCollide(pacman) == 1) {
-            pacman.setX(300);
-            pacman.setY(300);
-            health--;
-            playSound("pacman_death.wav");
-        }
-        ghost2.ghostMove();
-        if (ghost2.ghostCollide(pacman) == 1) {
-            pacman.setX(300);
-            pacman.setY(300);
-            health--;
-            playSound("pacman_death.wav");
-        }
-        ghost3.ghostMove();
-        if (ghost3.ghostCollide(pacman) == 1) {
-            pacman.setX(300);
-            pacman.setY(300);
-            health--;
-            playSound("pacman_death.wav");
-        }
-        ghost4.ghostMove();
-        if (ghost4.ghostCollide(pacman) == 1) {
-            pacman.setX(300);
-            pacman.setY(300);
-            health--;
-            playSound("pacman_death.wav");
+
+        for (Ghost a : ghosts) {
+            if (a.ghostCollide(pacman) == 1) {
+                pacman.setX(300);
+                pacman.setY(300);
+                health--;
+                playSound("pacman_death.wav");
+            }
+            a.ghostMove();
+            a.step();
+            a.drawMe(myBuffer);
         }
 
+        for (SpeedStop a : trash) {
+            if (a.collide(pacman) == 1) {
+                if (!stoppable) {
+                    stoppable = true;
+                    speedable = false;
+
+                    if (stoppableTimer != null && stoppableTimer.isRunning()) {
+                        stoppableTimer.stop();
+                    }
+                    if (speedableTimer != null && speedableTimer.isRunning()) {
+                        speedableTimer.stop();
+                    }
+
+                    stoppableTimer = new Timer(3000, new ActionListener() {
+                        public void actionPerformed(ActionEvent e) {
+                            stoppable = false;
+                            stoppableTimer.stop();
+                        }
+                    });
+                    stoppableTimer.setRepeats(false);
+                    stoppableTimer.start();
+                }
+            }
+            a.drawMe(myBuffer);
+        }
 
         for (Animatable animationObject : animationObjects) {
             animationObject.step();
@@ -206,6 +286,7 @@ public class Map extends JPanel {
         repaint();
     }
 
+
     private class AnimationListener implements ActionListener {
         public void actionPerformed(ActionEvent e) {
             animate();
@@ -215,47 +296,93 @@ public class Map extends JPanel {
 
     private class Key extends KeyAdapter {
         public void keyPressed(KeyEvent e) {
+            if (speedable == true && stoppable == false) {
+                if ((e.getKeyCode() == KeyEvent.VK_LEFT) && (!left)
+                        && (matrix[(pacman.getX() / 20) - 2][(pacman.getY() / 20)] != 5)
+                        && (matrix[(pacman.getX() / 20) - 2][(pacman.getY() / 20)] != 0)
+                        && (pacman.getY() % 20 == 0)) {
 
-            if ((e.getKeyCode() == KeyEvent.VK_LEFT) && (!left)
-                    && (matrix[(pacman.getX() / 20) - 1][(pacman.getY() / 20)] != 5)
-                    && (matrix[(pacman.getX() / 20) - 1][(pacman.getY() / 20)] != 0)
-                    && (pacman.getY() % 20 == 0)) {
+                    pacman.setX(pacman.getX() - 40);
+                    status = "left";
 
-                pacman.setX(pacman.getX() - 20);
+                }
 
-            }
+                if ((e.getKeyCode() == KeyEvent.VK_RIGHT && (!right)
+                        && (matrix[(pacman.getX() / 20) + 2][(pacman.getY() / 20)] != 5)
+                        && (matrix[(pacman.getX() / 20) + 2][(pacman.getY() / 20)] != 0)
+                        && (pacman.getY() % 20 == 0))) {
 
-            if ((e.getKeyCode() == KeyEvent.VK_RIGHT && (!right)
-                    && (matrix[(pacman.getX() / 20) + 1][(pacman.getY() / 20)] != 5)
-                    && (matrix[(pacman.getX() / 20) + 1][(pacman.getY() / 20)] != 0)
-                    && (pacman.getY() % 20 == 0))) {
+                    pacman.setX(pacman.getX() + 40);
+                    status = "right";
 
-                pacman.setX(pacman.getX() + 20);
-
-
-            }
-
-
-            if ((e.getKeyCode() == KeyEvent.VK_UP && (!up)
-                    && (matrix[(pacman.getX() / 20)][((pacman.getY() / 20) - 1)] != 5)
-                    && (matrix[(pacman.getX() / 20)][((pacman.getY() / 20) - 1)] != 0)
-                    && (pacman.getX() % 20 == 0))) {
-                pacman.setY(pacman.getY() - 20);
+                }
 
 
-            }
+                if ((e.getKeyCode() == KeyEvent.VK_UP && (!up)
+                        && (matrix[(pacman.getX() / 20)][((pacman.getY() / 20) - 2)] != 5)
+                        && (matrix[(pacman.getX() / 20)][((pacman.getY() / 20) - 2)] != 0)
+                        && (pacman.getX() % 20 == 0))) {
+                    pacman.setY(pacman.getY() - 40);
+                    status = "up";
 
-            if ((e.getKeyCode() == KeyEvent.VK_DOWN && (!down)
-                    && (matrix[(pacman.getX() / 20)][((pacman.getY() / 20) + 1)] != 5)
-                    && (matrix[(pacman.getX() / 20)][((pacman.getY() / 20) + 1)] != 0)
-                    && (pacman.getX() % 20 == 0))) {
-                pacman.setY(pacman.getY() + 20);
+                }
+
+                if ((e.getKeyCode() == KeyEvent.VK_DOWN && (!down)
+                        && (matrix[(pacman.getX() / 20)][((pacman.getY() / 20) + 2)] != 5)
+                        && (matrix[(pacman.getX() / 20)][((pacman.getY() / 20) + 2)] != 0)
+                        && (pacman.getX() % 20 == 0))) {
+                    pacman.setY(pacman.getY() + 40);
+                    status = "down";
+
+                }
 
 
+            } else if (stoppable == true && speedable == false) {
+                int x = 0;
+            } else if (stoppable == false && speedable == false) {
+                if ((e.getKeyCode() == KeyEvent.VK_LEFT) && (!left)
+                        && (matrix[(pacman.getX() / 20) - 1][(pacman.getY() / 20)] != 5)
+                        && (matrix[(pacman.getX() / 20) - 1][(pacman.getY() / 20)] != 0)
+                        && (pacman.getY() % 20 == 0)) {
+
+                    pacman.setX(pacman.getX() - 20);
+                    status = "left";
+                }
+
+                if ((e.getKeyCode() == KeyEvent.VK_RIGHT && (!right)
+                        && (matrix[(pacman.getX() / 20) + 1][(pacman.getY() / 20)] != 5)
+                        && (matrix[(pacman.getX() / 20) + 1][(pacman.getY() / 20)] != 0)
+                        && (pacman.getY() % 20 == 0))) {
+
+                    pacman.setX(pacman.getX() + 20);
+                    status = "right";
+
+                }
+
+
+                if ((e.getKeyCode() == KeyEvent.VK_UP && (!up)
+                        && (matrix[(pacman.getX() / 20)][((pacman.getY() / 20) - 1)] != 5)
+                        && (matrix[(pacman.getX() / 20)][((pacman.getY() / 20) - 1)] != 0)
+                        && (pacman.getX() % 20 == 0))) {
+                    pacman.setY(pacman.getY() - 20);
+                    status = "up";
+
+                }
+
+                if ((e.getKeyCode() == KeyEvent.VK_DOWN && (!down)
+                        && (matrix[(pacman.getX() / 20)][((pacman.getY() / 20) + 1)] != 5)
+                        && (matrix[(pacman.getX() / 20)][((pacman.getY() / 20) + 1)] != 0)
+                        && (pacman.getX() % 20 == 0))) {
+                    pacman.setY(pacman.getY() + 20);
+                    status = "down";
+
+                }
             }
 
         }
+
     }
 
-
 }
+
+

@@ -2,7 +2,7 @@ import javax.swing.*;
 import java.awt.*;
 
 
-public class Pacman extends Circle implements Animatable {
+public class Pacman extends Square implements Animatable {
     public int x;
     public int y;
     public int dX;
@@ -44,9 +44,26 @@ public class Pacman extends Circle implements Animatable {
 
     public void drawMe(Graphics g)
     {
-        g.setColor(c);
-        g.fillOval(x, y, r*2, r*2);
+        ImageIcon up = new ImageIcon("up.png");
+        ImageIcon down = new ImageIcon("down.png");
+        ImageIcon left = new ImageIcon("left.png");
+        ImageIcon right = new ImageIcon("right.png");
+
+        if (Map.getStatus() == "up") {
+            g.drawImage(up.getImage(), getX() + 2, getY() + 2, 20, 20, null);
+        } else if (Map.getStatus() == "down") {
+            g.drawImage(down.getImage(), getX() + 2, getY() + 2, 20, 20, null);
+        } else if (Map.getStatus() == "left") {
+            g.drawImage(left.getImage(), getX() + 2, getY() + 2, 20, 20, null);
+        } else if (Map.getStatus() == "right") {
+            g.drawImage(right.getImage(), getX() + 2, getY() + 2, 20, 20, null);
+        }
     }
+
+
+
+
+
 
     public void step() {
         setX(getX());
