@@ -1,0 +1,41 @@
+David Debreczy, Arthur Dsouza, Abhiraj Mallangi, Period 6, 6/2/2024
+
+Game : Pacman Ultra
+
+
+Instructions: 
+
+First and foremost, we have found an odd and rare error where sound and collisions fail to work.
+To begin, you must compile the PacmanDriver. 
+Then, player has to compile the Map.java file again for good measure. Next, locate the PacmanDriver.java
+file and click run. You will be met with a GUI that has three levels, along with instructions.
+Clicking on instructions will bring you to a simplified instructions guide, such as this one. Click OK
+to close it when finished.
+
+To play any level, easy to hard, click on any of the buttons. This will open a new panel that contains the game.
+You can use the arrow keys to move your Pacman character.
+Your score is visible on the top of the screen. It increases whenever you eat the white dots/food.
+To win, eat all the dots on the map without dying three times. 
+
+On standard, the ghosts are red, and are able to reset your Pacman upon collision. To prevent this, stray away from them
+until you get a cherry powerup. 
+
+
+There are three powerups, cherries, oranges, and trash. Cherries will allow you to eat ghosts for a few seconds.
+
+During this time, the ghosts will turn from a red state to a blue state. Touching the ghosts will leave them stuck
+and unable to move. After the powerup has worn off, any unmoving ghosts are still able to reset/kill your character.
+
+Oranges allow you to move two squares at a time for a few seconds, and should only be used to traverse wide spaces.
+Otherwise, you will find trouble traversing through narrow spaces with many walls. 
+
+Trash is more of a power-down. It will make your Pacman unable to move for a few seconds. 
+
+
+If your character eats all the food, the game ends, and the timer stops. You will recieve a message telling you so. 
+If your character diest three times, the game ends, and the timer stops. A small X will appear at the bottom of the screen,
+indicating your defeat.
+
+To play a new level, re-run the PacmanDriver file.
+
+To pause a current level, press P. To unpause, press P again.

@@ -1,0 +1,40 @@
+David Debreczy, Arthur Dsouza, Abhiraj Mallangi, Period 6, 6/2/2024
+
+Game : Pacman Ultra
+
+The game we are submitting is named Pacman Ultra. It is an extension of the retro game Pacman. Though, there are many more powerups, more chaotic maps, and faster animation
+that is not found in the original game. 
+
+
+For green credit, we used loops and while loops, along with implementing strings for the scoreboard.
+We designed two of our own classes, with their own getters and setters, and both extend another class,
+Square -> (Map and Pacman). We used GUI elements JPanel/JFrame/JButton, and used graphics via images/shapes.
+
+For this, we believe we should recieve 13.5/13.5 points on the GREEN portion of our program.
+
+
+For blue credit, we used 2D arrays in order to construct each of our maps. We designed three more classes
+which include the powerups and map reader. We also used Animatable for an authentic use of an interface.
+Our complex algorithm is the random movement generator in the Ghost class, which takes into account all
+possible directions the ghost could move in, and takes a variable factor to decide which path to go in. 
+This needed nested for loops. We used animation several animation/powerup timer, and several action listeners.
+
+For this, we believe we should recieve 3.5/3.5 points on the BLUE portion of our program.
+
+
+For red credit, we designed five more classes that include the health identifier and trash "powerdown," 
+along with others, for a total of 11 classes, excluding those in the driver. Our collision identifiers all use
+another object as an argument (Pacman) within the methods. Our direct keyboard input is moving the Pacman 
+with arrow keys. We also completed the additional assignment on File I/O and Panel Swap. We authentically used
+File I/O by having a class read a 30x30 integer text file, and transferring into Map.java, where it could be read
+into objects. We used panel swapping authentically by having a homescreen, and then opening a new JPanel
+for new levels based on what button you click.
+
+For this, we believe we should recieve 3.5/3.5 points on the RED portion of our program.
+
+
+For black credit, we implemented sound into our Pacman game. This was done by using a sound sampling library
+that played .wav audio files into the speakers. You were then able to call the function and play a
+.wav file using it as an argument. This was not taught to us in class, so it fits the criteria.
+
+For this, we believe we should recieve 3/3 points on the BLACK portion of our program. 
